@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>周历视图 - 第10周到第20周</title>
+    <title>周历视图 - 第10周到第43周</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
     <script>
@@ -40,34 +40,20 @@
                     font-size: 0.75rem;
                 }
             }
-            .week-nav-item {
-                @apply py-2 px-4 cursor-pointer rounded-md transition-all duration-200;
-            }
-            .week-nav-item:hover {
-                @apply bg-neutral;
-            }
-            .week-nav-item.active {
-                @apply bg-primary text-white font-medium;
-            }
             .calendar-day {
-                @apply flex flex-col items-center justify-center p-1 transition-all duration-200 cursor-pointer min-h-[60px];
+                @apply flex flex-col items-center justify-center p-1 transition-all duration-200 cursor-pointer min-h-[60px] bg-white;
             }
             @media (min-width: 640px) {
                 .calendar-day {
                     @apply aspect-square min-h-[80px];
                 }
             }
-            .calendar-day:hover:not(.other-month) {
+            .calendar-day:hover {
                 @apply bg-neutral rounded-md;
             }
+            /* 仅高亮系统当天 */
             .calendar-day.today {
                 @apply bg-primary text-white font-bold rounded-md ring-2 ring-accent;
-            }
-            .calendar-day.other-month {
-                @apply text-gray-300 cursor-default;
-            }
-            .calendar-day.current-month {
-                @apply text-gray-800;
             }
             .calendar-day.has-note {
                 @apply relative;
@@ -75,18 +61,6 @@
             .calendar-day.has-note::after {
                 content: '';
                 @apply absolute bottom-1 right-1 w-2 h-2 bg-secondary rounded-full;
-            }
-            .modal-backdrop {
-                @apply fixed inset-0 bg-black bg-opacity-50 z-40;
-            }
-            .modal-content {
-                @apply bg-white rounded-lg shadow-lg w-full max-w-md p-6 transform transition-all;
-            }
-            .progress-bar {
-                @apply h-2 bg-neutral-dark rounded-full overflow-hidden;
-            }
-            .progress-fill {
-                @apply h-full bg-primary transition-all duration-500 ease-out;
             }
             .week-header {
                 @apply text-sm font-medium text-gray-600 py-2 text-center;
@@ -100,27 +74,15 @@
     </style>
 </head>
 <body class="bg-gray-50 min-h-screen">
-    <div class="container mx-auto px-4 py-8">
-        <header class="mb-8">
-            <h1 class="text-3xl font-bold text-gray-800 mb-2">周历视图</h1>
-            <p class="text-gray-600">从第10周第2天到第20周的日历</p>
-            
-            <!-- 进度指示器 -->
-            <div class="mt-6">
-                <div class="flex justify-between items-center mb-2">
-                    <span class="text-sm font-medium text-gray-700">当前进度</span>
-                    <span id="progress-text" class="text-sm font-medium text-primary">0%</span>
-                </div>
-                <div class="progress-bar">
-                    <div id="progress-fill" class="progress-fill" style="width: 0%"></div>
-                </div>
-            </div>
+    <div class="container mx-auto px-2 sm:px-4 py-4">
+        <header class="mb-6">
+            <h1 class="text-2xl sm:text-3xl font-bold text-gray-800 mb-2">周历视图</h1>
+            <p class="text-gray-600">固定5月12日为第10周第2天，展示至第43周</p>
         </header>
 
-        <div class="bg-white rounded-lg shadow-calendar p-6">
-            <h2 class="text-lg sm:text-xl font-semibold text-gray-800 mb-4 sm:mb-6">第10周第2天到第43周日历</h2>
+        <div class="bg-white rounded-lg shadow-calendar p-3 sm:p-6">
+            <h2 class="text-lg sm:text-xl font-semibold text-gray-800 mb-3 sm:mb-4">第10周 ～ 第43周</h2>
 
-            <!-- 星期标题 -->
             <div class="calendar-grid mb-1">
                 <div class="week-header">周一</div>
                 <div class="week-header">周二</div>
@@ -131,62 +93,45 @@
                 <div class="week-header">周日</div>
             </div>
 
-            <!-- 日历网格容器 -->
-            <div id="calendar-container" class="space-y-6">
-                <!-- 每周日历将通过JavaScript动态生成 -->
+            <div id="calendar-container" class="space-y-4 sm:space-y-6">
             </div>
         </div>
 
-        <!-- 图例说明 -->
-        <div class="mt-8 bg-white rounded-lg shadow-calendar p-4">
-            <h3 class="text-lg font-semibold text-gray-800 mb-3">图例说明</h3>
-            <div class="flex flex-wrap gap-4">
+        <div class="mt-6 bg-white rounded-lg shadow-calendar p-3 sm:p-4">
+            <h3 class="text-base sm:text-lg font-semibold text-gray-800 mb-2">图例说明</h3>
+            <div class="flex flex-wrap gap-3 text-sm">
                 <div class="flex items-center">
-                    <div class="w-4 h-4 bg-primary rounded-md mr-2"></div>
-                    <span class="text-sm text-gray-700">当前日期 (第10周第2天)</span>
+                    <div class="w-3 h-3 bg-primary rounded mr-2"></div>
+                    <span>今日</span>
                 </div>
                 <div class="flex items-center">
-                    <div class="w-4 h-4 bg-neutral rounded-md mr-2"></div>
-                    <span class="text-sm text-gray-700">可点击日期</span>
-                </div>
-                <div class="flex items-center">
-                    <div class="w-4 h-4 bg-neutral-dark rounded-md mr-2"></div>
-                    <span class="text-sm text-gray-700">其他月份日期</span>
-                </div>
-                <div class="flex items-center">
-                    <div class="w-4 h-4 bg-secondary rounded-md mr-2"></div>
-                    <span class="text-sm text-gray-700">有备注的日期</span>
+                    <div class="w-3 h-3 bg-secondary rounded mr-2"></div>
+                    <span>有备注</span>
                 </div>
             </div>
         </div>
+    </div>
 
-        <!-- 备注模态框 -->
-        <div id="note-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
-            <div class="bg-white rounded-lg shadow-lg w-full max-w-md mx-4 p-4 sm:p-6 transform transition-all">
-                <div class="flex justify-between items-center mb-4">
-                    <h3 id="modal-title" class="text-lg font-semibold text-gray-800">添加备注</h3>
-                    <button id="close-modal" class="text-gray-500 hover:text-gray-700">
-                        <i class="fa fa-times"></i>
-                    </button>
-                </div>
-                <div class="mb-4">
-                    <label for="note-content" class="block text-sm font-medium text-gray-700 mb-1">备注内容</label>
-                    <textarea id="note-content" rows="4" class="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" placeholder="请输入备注内容..."></textarea>
-                </div>
-                <div class="flex justify-end">
-                    <button id="delete-note" class="px-4 py-2 bg-red-500 text-white rounded-md mr-2 hover:bg-red-600 transition-colors hidden">删除备注</button>
-                    <button id="save-note" class="px-4 py-2 bg-primary text-white rounded-md hover:bg-accent transition-colors">保存备注</button>
-                </div>
+    <!-- 备注弹窗 -->
+    <div id="note-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+        <div class="bg-white rounded-lg shadow-lg w-full max-w-md mx-3 p-4">
+            <div class="flex justify-between items-center mb-3">
+                <h3 id="modal-title" class="text-lg font-semibold text-gray-800">备注</h3>
+                <button id="close-modal" class="text-gray-500 hover:text-gray-700">
+                    <i class="fa fa-times"></i>
+                </button>
+            </div>
+            <textarea id="note-content" rows="4" class="w-full border border-gray-300 rounded p-2 mb-3 focus:outline-none focus:ring-2 focus:ring-primary" placeholder="输入备注..."></textarea>
+            <div class="flex justify-end gap-2">
+                <button id="delete-note" class="px-3 py-2 bg-red-500 text-white rounded hidden">删除</button>
+                <button id="save-note" class="px-3 py-2 bg-primary text-white rounded">保存</button>
             </div>
         </div>
     </div>
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            // 获取DOM元素
             const calendarContainer = document.getElementById('calendar-container');
-            const progressFill = document.getElementById('progress-fill');
-            const progressText = document.getElementById('progress-text');
             const noteModal = document.getElementById('note-modal');
             const modalTitle = document.getElementById('modal-title');
             const noteContent = document.getElementById('note-content');
@@ -194,201 +139,133 @@
             const deleteNoteBtn = document.getElementById('delete-note');
             const closeModalBtn = document.getElementById('close-modal');
 
-            // 设置常量
             const START_WEEK = 10;
             const END_WEEK = 43;
-            const TODAY_WEEK_DAY = 2; // 第2天（周二）
-            const TODAY = new Date();
-            
-            // 存储备注数据
+
+            // 固定5月12日 为第10周第2天(周二)
+            const fixedDay = new Date();
+            fixedDay.setMonth(4);
+            fixedDay.setDate(12);
+            fixedDay.setHours(0,0,0,0);
+
+            // 系统今天
+            const today = new Date();
+            today.setHours(0,0,0,0);
+
+            // 第10周周一
+            let week10Monday = new Date(fixedDay);
+            week10Monday.setDate(fixedDay.getDate() - 1);
+
             let notes = JSON.parse(localStorage.getItem('calendarNotes')) || {};
-            
-            // 当前选中的日期
             let selectedDate = null;
-            
-            // 计算第10周第2天的日期（将今天设为第10周第2天）
-            const startDate = new Date(TODAY);
-            startDate.setDate(TODAY.getDate() - (TODAY_WEEK_DAY - 1)); // 调整到第10周第1天（周一）
-            startDate.setDate(startDate.getDate() - 7 * (START_WEEK - 1)); // 调整到第1周第1天
-            
-            // 计算第43周最后一天的日期
-            const endDate = new Date(startDate);
-            endDate.setDate(startDate.getDate() + 7 * END_WEEK - 1);
-            
-            // 计算总天数和当前进度
-            const totalDays = (endDate - startDate) / (1000 * 60 * 60 * 24) + 1;
-            const daysPassed = (TODAY - startDate) / (1000 * 60 * 60 * 24) + 1;
-            const progressPercentage = Math.min(Math.round((daysPassed / totalDays) * 100), 100);
-            
-            // 更新进度条
-            progressFill.style.width = `${progressPercentage}%`;
-            progressText.textContent = `${progressPercentage}%`;
-            
-            // 生成所有周的日历
+
             function generateAllWeeks() {
                 calendarContainer.innerHTML = '';
-                
-                for (let week = START_WEEK; week <= END_WEEK; week++) {
-                    // 创建周容器
-                    const weekContainer = document.createElement('div');
-                    weekContainer.className = 'mb-8';
-                    
-                    // 添加周标题
-                    const weekTitle = document.createElement('h3');
-                    weekTitle.className = 'text-lg font-medium text-gray-700 mb-2 flex items-center';
-                    weekTitle.innerHTML = `<span class="bg-primary text-white px-3 py-1 rounded-md mr-2">第${week}周</span>`;
-                    weekContainer.appendChild(weekTitle);
-                    
-                    // 创建日历网格
-                    const calendarGrid = document.createElement('div');
-                    calendarGrid.className = 'calendar-grid bg-neutral-dark';
-                    
-                    // 计算当前周的开始日期（周一）
-                    const weekStartDate = new Date(startDate);
-                    weekStartDate.setDate(startDate.getDate() + 7 * (week - 1));
-                    
-                    // 添加当前周的所有日期
-                    for (let day = 0; day < 7; day++) {
-                        const date = new Date(weekStartDate);
-                        date.setDate(weekStartDate.getDate() + day);
-                        
-                        // 计算是第几周的第几天
-                        const weekDayNumber = day + 1;
-                        
-                        addDateToCalendar(calendarGrid, date, week, weekDayNumber);
+
+                for (let w = START_WEEK; w <= END_WEEK; w++) {
+                    let weekStart = new Date(week10Monday);
+                    weekStart.setDate(week10Monday.getDate() + (w - 10) * 7);
+
+                    let weekWrap = document.createElement('div');
+                    weekWrap.className = 'mb-4';
+
+                    let weekTitle = document.createElement('h3');
+                    weekTitle.className = 'text-base sm:text-lg font-medium text-gray-700 mb-2';
+                    weekTitle.innerText = `第${w}周`;
+                    weekWrap.appendChild(weekTitle);
+
+                    let grid = document.createElement('div');
+                    grid.className = 'calendar-grid bg-neutral-dark';
+
+                    for (let d = 0; d < 7; d++) {
+                        let curDate = new Date(weekStart);
+                        curDate.setDate(weekStart.getDate() + d);
+                        let dayNo = d + 1;
+
+                        addDayCell(grid, curDate, w, dayNo);
                     }
-                    
-                    weekContainer.appendChild(calendarGrid);
-                    calendarContainer.appendChild(weekContainer);
+
+                    weekWrap.appendChild(grid);
+                    calendarContainer.appendChild(weekWrap);
                 }
             }
-            
-            // 添加日期到日历
-            function addDateToCalendar(grid, date, week, weekDayNumber) {
-                const dateElement = document.createElement('div');
-                dateElement.className = 'calendar-day current-month';
-                
-                // 检查是否是今天
-                const isToday = date.toDateString() === TODAY.toDateString();
-                if (isToday) {
-                    dateElement.classList.add('today');
-                }
-                
-                // 检查是否有备注
-                const dateKey = date.toISOString().split('T')[0];
-                if (notes[dateKey]) {
-                    dateElement.classList.add('has-note');
-                }
-                
-                // 格式化日期显示
-                const dayOfMonth = date.getDate();
-                const month = date.getMonth() + 1;
-                
-                dateElement.innerHTML = `
-                    <span class="text-xs sm:text-sm font-medium">${month}/${dayOfMonth}</span>
-                    <span class="text-xs mt-0.5">第${weekDayNumber}天</span>
+
+            function addDayCell(grid, date, week, dayNo) {
+                let cell = document.createElement('div');
+                cell.className = 'calendar-day';
+
+                // 只高亮系统当天
+                const isToday = date.getTime() === today.getTime();
+                if (isToday) cell.classList.add('today');
+
+                const key = date.getFullYear() + "-" 
+                          + String(date.getMonth()+1).padStart(2,'0') + "-" 
+                          + String(date.getDate()).padStart(2,'0');
+                if (notes[key]) cell.classList.add('has-note');
+
+                cell.innerHTML = `
+                    <span class="text-xs sm:text-sm">${date.getMonth()+1}/${date.getDate()}</span>
+                    <span class="text-xs text-gray-500 mt-0.5">第${dayNo}天</span>
                 `;
-                
-                // 添加点击事件
-                dateElement.addEventListener('click', () => {
-                    openNoteModal(date, week, weekDayNumber);
-                });
-                
-                grid.appendChild(dateElement);
+
+                cell.onclick = () => openModal(date, week, dayNo);
+                grid.appendChild(cell);
             }
-            
-            // 打开备注模态框
-            function openNoteModal(date, week, weekDayNumber) {
+
+            function openModal(date, week, dayNo){
                 selectedDate = date;
-                const dateKey = date.toISOString().split('T')[0];
-                const dayOfMonth = date.getDate();
-                const month = date.getMonth() + 1;
-                
-                // 设置模态框标题
-                modalTitle.textContent = `${month}月${dayOfMonth}日 (第${week}周第${weekDayNumber}天) 的备注`;
-                
-                // 设置备注内容
-                noteContent.value = notes[dateKey] || '';
-                
-                // 显示或隐藏删除按钮
-                if (notes[dateKey]) {
-                    deleteNoteBtn.classList.remove('hidden');
-                } else {
-                    deleteNoteBtn.classList.add('hidden');
-                }
-                
-                // 显示模态框
+                const key = date.getFullYear() + "-" 
+                          + String(date.getMonth()+1).padStart(2,'0') + "-" 
+                          + String(date.getDate()).padStart(2,'0');
+
+                modalTitle.innerText = `${date.getMonth()+1}月${date.getDate()}日 第${week}周第${dayNo}天`;
+                noteContent.value = notes[key] || '';
+
+                if(notes[key]) deleteNoteBtn.classList.remove('hidden');
+                else deleteNoteBtn.classList.add('hidden');
+
                 noteModal.classList.remove('hidden');
-                document.body.classList.add('overflow-hidden');
+                document.body.style.overflow = 'hidden';
             }
-            
-            // 关闭备注模态框
-            function closeNoteModal() {
+
+            function closeModal(){
                 noteModal.classList.add('hidden');
-                document.body.classList.remove('overflow-hidden');
+                document.body.style.overflow = '';
                 selectedDate = null;
             }
-            
-            // 保存备注
-            function saveNote() {
-                if (!selectedDate) return;
-                
-                const dateKey = selectedDate.toISOString().split('T')[0];
-                const content = noteContent.value.trim();
-                
-                if (content) {
-                    notes[dateKey] = content;
-                } else {
-                    delete notes[dateKey];
-                }
-                
-                // 保存到本地存储
+
+            function saveNote(){
+                if(!selectedDate) return;
+                const key = selectedDate.getFullYear() + "-" 
+                          + String(selectedDate.getMonth()+1).padStart(2,'0') + "-" 
+                          + String(selectedDate.getDate()).padStart(2,'0');
+                const val = noteContent.value.trim();
+
+                if(val) notes[key] = val;
+                else delete notes[key];
+
                 localStorage.setItem('calendarNotes', JSON.stringify(notes));
-                
-                // 重新生成日历以更新备注标记
                 generateAllWeeks();
-                
-                // 关闭模态框
-                closeNoteModal();
+                closeModal();
             }
-            
-            // 删除备注
-            function deleteNote() {
-                if (!selectedDate) return;
-                
-                const dateKey = selectedDate.toISOString().split('T')[0];
-                delete notes[dateKey];
-                
-                // 保存到本地存储
+
+            function delNote(){
+                if(!selectedDate) return;
+                const key = selectedDate.getFullYear() + "-" 
+                          + String(selectedDate.getMonth()+1).padStart(2,'0') + "-" 
+                          + String(selectedDate.getDate()).padStart(2,'0');
+                delete notes[key];
                 localStorage.setItem('calendarNotes', JSON.stringify(notes));
-                
-                // 重新生成日历以更新备注标记
                 generateAllWeeks();
-                
-                // 关闭模态框
-                closeNoteModal();
+                closeModal();
             }
-            
-            // 事件监听器
-            saveNoteBtn.addEventListener('click', saveNote);
-            deleteNoteBtn.addEventListener('click', deleteNote);
-            closeModalBtn.addEventListener('click', closeNoteModal);
-            
-            // 点击模态框背景关闭
-            noteModal.addEventListener('click', (e) => {
-                if (e.target === noteModal) {
-                    closeNoteModal();
-                }
-            });
-            
-            // 按ESC键关闭模态框
-            document.addEventListener('keydown', (e) => {
-                if (e.key === 'Escape' && !noteModal.classList.contains('hidden')) {
-                    closeNoteModal();
-                }
-            });
-            
-            // 初始化日历
+
+            saveNoteBtn.onclick = saveNote;
+            deleteNoteBtn.onclick = delNote;
+            closeModalBtn.onclick = closeModal;
+            noteModal.onclick = e => { if(e.target === noteModal) closeModal(); };
+            document.onkeydown = e => { if(e.key === 'Escape') closeModal(); };
+
             generateAllWeeks();
         });
     </script>
