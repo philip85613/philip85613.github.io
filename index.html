@@ -58,9 +58,25 @@
             .calendar-day.has-note {
                 @apply relative;
             }
+            .tab-btn {
+                @apply px-4 py-2 text-sm font-medium text-gray-500 border-b-2 border-transparent cursor-pointer transition-colors duration-200;
+            }
+            .tab-btn:hover {
+                @apply text-gray-700;
+            }
+            .tab-btn.active {
+                @apply text-primary border-primary;
+            }
+            .tab-panel {
+                display: block;
+            }
+            .tab-panel.hidden-panel {
+                display: none;
+            }
+
             .calendar-day.has-note::after {
                 content: '';
-                @apply absolute bottom-1 right-1 w-2 h-2 bg-secondary rounded-full;
+                @apply absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full;
             }
             .week-header {
                 @apply text-sm font-medium text-gray-600 py-2 text-center;
@@ -69,6 +85,44 @@
                 .week-header {
                     @apply text-xs py-1;
                 }
+            }
+            .bp-grid {
+                display: grid;
+                grid-template-columns: 4.5rem 1fr 1fr;
+                gap: 1px;
+                font-size: 0.85rem;
+            }
+            @media (min-width: 640px) {
+                .bp-grid {
+                    grid-template-columns: 5.5rem 1fr 1fr;
+                }
+            }
+            .bp-header {
+                @apply text-xs font-medium text-gray-500 py-2 text-center bg-gray-50;
+            }
+            .bp-cell {
+                @apply flex flex-col items-center justify-center p-1 min-h-[40px] bg-white text-sm cursor-pointer transition-colors duration-200;
+            }
+            .bp-cell:hover {
+                @apply bg-neutral;
+            }
+            .bp-cell.label-cell {
+                @apply cursor-default;
+            }
+            .bp-cell.label-cell:hover {
+                @apply bg-white;
+            }
+            .bp-cell .bp-value {
+                @apply text-gray-800 font-medium;
+            }
+            .bp-cell .bp-value.missing {
+                @apply text-gray-300 font-normal;
+            }
+            .bp-cell .bp-value.bp-high {
+                @apply text-red-600 font-medium;
+            }
+            .bp-cell .bp-value.bp-normal {
+                @apply text-green-600 font-medium;
             }
         }
     </style>
@@ -80,8 +134,14 @@
             <p class="text-gray-600">固定5月12日为第10周第2天，展示至第43周</p>
         </header>
 
+        <div class="flex gap-1 mb-4 border-b border-gray-200">
+            <button class="tab-btn active" data-tab="1">周历</button>
+            <button class="tab-btn" data-tab="2">血压</button>
+        </div>
+
         <div class="bg-white rounded-lg shadow-calendar p-3 sm:p-6">
-            <h2 class="text-lg sm:text-xl font-semibold text-gray-800 mb-3 sm:mb-4">第10周 ～ 第43周</h2>
+            <div id="tab-panel-1" class="tab-panel">
+                <h2 class="text-lg sm:text-xl font-semibold text-gray-800 mb-3 sm:mb-4">第10周 ～ 第43周</h2>
 
             <div class="calendar-grid mb-1">
                 <div class="week-header">周一</div>
@@ -96,8 +156,32 @@
             <div id="calendar-container" class="space-y-4 sm:space-y-6">
             </div>
         </div>
+        <div id="tab-panel-2" class="tab-panel hidden-panel">
+            <div class="flex items-center justify-between mb-1">
+                <h2 class="text-lg sm:text-xl font-semibold text-gray-800">血压记录</h2>
+                <button id="bp-settings-btn" class="text-gray-400 hover:text-gray-600 transition-colors" title="设置血压上限">
+                    <i class="fa fa-cog"></i>
+                </button>
+            </div>
+            <p class="text-sm text-gray-500 mb-4">记录每日早晚血压值（高压/低压）</p>
+            <div id="bp-settings-panel" class="hidden mb-4 p-3 bg-gray-50 rounded-lg border border-gray-200">
+                <div class="flex items-center gap-4">
+                    <label class="flex items-center gap-2 text-sm">
+                        <span class="text-gray-600">高压上限</span>
+                        <input id="bp-high-limit" type="number" min="80" max="250" class="w-20 border border-gray-300 rounded p-1 text-sm text-center focus:outline-none focus:ring-2 focus:ring-primary">
+                    </label>
+                    <label class="flex items-center gap-2 text-sm">
+                        <span class="text-gray-600">低压上限</span>
+                        <input id="bp-low-limit" type="number" min="40" max="180" class="w-20 border border-gray-300 rounded p-1 text-sm text-center focus:outline-none focus:ring-2 focus:ring-primary">
+                    </label>
+                    <button id="bp-save-limit" class="px-3 py-1.5 bg-primary text-white text-sm rounded hover:bg-accent transition-colors">保存</button>
+                </div>
+            </div>
+            <div id="bp-container" class="space-y-4"></div>
+        </div>
+    </div>
 
-        <div class="mt-6 bg-white rounded-lg shadow-calendar p-3 sm:p-4">
+    <div class="mt-6 bg-white rounded-lg shadow-calendar p-3 sm:p-4">
             <h3 class="text-base sm:text-lg font-semibold text-gray-800 mb-2">图例说明</h3>
             <div class="flex flex-wrap gap-3 text-sm">
                 <div class="flex items-center">
@@ -105,7 +189,7 @@
                     <span>今日</span>
                 </div>
                 <div class="flex items-center">
-                    <div class="w-3 h-3 bg-secondary rounded mr-2"></div>
+                    <div class="w-3 h-3 bg-red-500 rounded mr-2"></div>
                     <span>有备注</span>
                 </div>
             </div>
@@ -125,6 +209,40 @@
             <div class="flex justify-end gap-2">
                 <button id="delete-note" class="px-3 py-2 bg-red-500 text-white rounded hidden">删除</button>
                 <button id="save-note" class="px-3 py-2 bg-primary text-white rounded">保存</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 血压记录弹窗 -->
+    <div id="bp-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+        <div class="bg-white rounded-lg shadow-lg w-full max-w-sm mx-3 p-4">
+            <div class="flex justify-between items-center mb-3">
+                <h3 id="bp-modal-title" class="text-lg font-semibold text-gray-800">血压记录</h3>
+                <button id="close-bp-modal" class="text-gray-500 hover:text-gray-700">
+                    <i class="fa fa-times"></i>
+                </button>
+            </div>
+            <div class="grid grid-cols-2 gap-4 mb-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-600 mb-1">早上</label>
+                    <div class="flex gap-2 items-center">
+                        <input id="bp-morning-high" type="number" min="50" max="280" placeholder="高压" class="w-full border border-gray-300 rounded p-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary">
+                        <span class="text-gray-400 text-sm shrink-0">/</span>
+                        <input id="bp-morning-low" type="number" min="20" max="180" placeholder="低压" class="w-full border border-gray-300 rounded p-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-600 mb-1">晚上</label>
+                    <div class="flex gap-2 items-center">
+                        <input id="bp-evening-high" type="number" min="50" max="280" placeholder="高压" class="w-full border border-gray-300 rounded p-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary">
+                        <span class="text-gray-400 text-sm shrink-0">/</span>
+                        <input id="bp-evening-low" type="number" min="20" max="180" placeholder="低压" class="w-full border border-gray-300 rounded p-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary">
+                    </div>
+                </div>
+            </div>
+            <div class="flex justify-end gap-2">
+                <button id="delete-bp" class="px-3 py-2 bg-red-500 text-white rounded hidden">删除</button>
+                <button id="save-bp" class="px-3 py-2 bg-primary text-white rounded">保存</button>
             </div>
         </div>
     </div>
@@ -203,9 +321,11 @@
                           + String(date.getDate()).padStart(2,'0');
                 if (notes[key]) cell.classList.add('has-note');
 
+                const noteText = notes[key] || '';
                 cell.innerHTML = `
                     <span class="text-xs sm:text-sm">${date.getMonth()+1}/${date.getDate()}</span>
                     <span class="text-xs text-gray-500 mt-0.5">第${dayNo}天</span>
+                    ${noteText ? `<span class="text-[0.6rem] text-red-600 leading-tight truncate w-full text-center">${noteText.length > 8 ? noteText.slice(0,8)+'…' : noteText}</span>` : ''}
                 `;
 
                 cell.onclick = () => openModal(date, week, dayNo);
@@ -260,13 +380,185 @@
                 closeModal();
             }
 
+            // ---------- Blood Pressure ----------
+            const BP_START_WEEK = 16; // 从6月28日所在周（第16周）开始
+            let bpData = JSON.parse(localStorage.getItem('bloodPressureData')) || {};
+            let bpSettings = JSON.parse(localStorage.getItem('bpSettings')) || { highLimit: 140, lowLimit: 90 };
+            let selectedBpDate = null;
+
+            const bpModal = document.getElementById('bp-modal');
+            const bpModalTitle = document.getElementById('bp-modal-title');
+            const bpMorningHigh = document.getElementById('bp-morning-high');
+            const bpMorningLow = document.getElementById('bp-morning-low');
+            const bpEveningHigh = document.getElementById('bp-evening-high');
+            const bpEveningLow = document.getElementById('bp-evening-low');
+            const saveBpBtn = document.getElementById('save-bp');
+            const deleteBpBtn = document.getElementById('delete-bp');
+            const closeBpModalBtn = document.getElementById('close-bp-modal');
+            const bpSettingsBtn = document.getElementById('bp-settings-btn');
+            const bpSettingsPanel = document.getElementById('bp-settings-panel');
+            const bpHighLimit = document.getElementById('bp-high-limit');
+            const bpLowLimit = document.getElementById('bp-low-limit');
+            const bpSaveLimit = document.getElementById('bp-save-limit');
+
+            function getDateKey(date) {
+                return date.getFullYear() + "-"
+                     + String(date.getMonth()+1).padStart(2,'0') + "-"
+                     + String(date.getDate()).padStart(2,'0');
+            }
+
+            function getBpClass(reading) {
+                if (!reading) return 'missing';
+                return (reading.high > bpSettings.highLimit || reading.low > bpSettings.lowLimit) ? 'bp-high' : 'bp-normal';
+            }
+
+            function generateBPView() {
+                const bpContainer = document.getElementById('bp-container');
+                bpContainer.innerHTML = '';
+                const dayNames = ['周一','周二','周三','周四','周五','周六','周日'];
+
+                for (let w = BP_START_WEEK; w <= END_WEEK; w++) {
+                    let weekStart = new Date(week10Monday);
+                    weekStart.setDate(week10Monday.getDate() + (w - 10) * 7);
+                    let wrap = document.createElement('div');
+                    let title = document.createElement('h3');
+                    title.className = 'text-base sm:text-lg font-medium text-gray-700 mb-2';
+                    title.innerText = `第${w}周`;
+                    wrap.appendChild(title);
+                    let grid = document.createElement('div');
+                    grid.className = 'bp-grid bg-neutral-dark';
+
+                    ['日期','早上','晚上'].forEach(text => {
+                        let h = document.createElement('div');
+                        h.className = 'bp-header';
+                        h.innerText = text;
+                        grid.appendChild(h);
+                    });
+
+                    for (let d = 0; d < 7; d++) {
+                        let curDate = new Date(weekStart);
+                        curDate.setDate(weekStart.getDate() + d);
+                        let dayNo = d + 1;
+                        const key = getDateKey(curDate);
+
+                        let dateCell = document.createElement('div');
+                        dateCell.className = 'bp-cell label-cell';
+                        dateCell.innerHTML = `<span class="text-xs text-gray-500">${dayNames[d]}</span><span class="text-xs sm:text-sm font-medium text-gray-800">${curDate.getMonth()+1}/${curDate.getDate()}</span>`;
+                        dateCell.onclick = () => openBpModal(curDate, w, dayNo);
+                        grid.appendChild(dateCell);
+
+                        let mCell = document.createElement('div');
+                        mCell.className = 'bp-cell';
+                        const m = bpData[key]?.morning;
+                        mCell.innerHTML = `<span class="bp-value ${getBpClass(m)}">${m ? m.high+'/'+m.low : '--/--'}</span>`;
+                        mCell.onclick = () => openBpModal(curDate, w, dayNo, 'morning');
+                        grid.appendChild(mCell);
+
+                        let eCell = document.createElement('div');
+                        eCell.className = 'bp-cell';
+                        const e = bpData[key]?.evening;
+                        eCell.innerHTML = `<span class="bp-value ${getBpClass(e)}">${e ? e.high+'/'+e.low : '--/--'}</span>`;
+                        eCell.onclick = () => openBpModal(curDate, w, dayNo, 'evening');
+                        grid.appendChild(eCell);
+                    }
+                    wrap.appendChild(grid);
+                    bpContainer.appendChild(wrap);
+                }
+            }
+
+            function openBpModal(date, week, dayNo, focus) {
+                selectedBpDate = date;
+                const key = getDateKey(date);
+                bpModalTitle.innerText = `${date.getMonth()+1}月${date.getDate()}日 第${week}周第${dayNo}天`;
+                const d = bpData[key] || {};
+                bpMorningHigh.value = d.morning?.high || '';
+                bpMorningLow.value = d.morning?.low || '';
+                bpEveningHigh.value = d.evening?.high || '';
+                bpEveningLow.value = d.evening?.low || '';
+                deleteBpBtn.classList.toggle('hidden', !d.morning && !d.evening);
+                bpModal.classList.remove('hidden');
+                document.body.style.overflow = 'hidden';
+                if (focus === 'morning') setTimeout(() => bpMorningHigh.focus(), 100);
+                else if (focus === 'evening') setTimeout(() => bpEveningHigh.focus(), 100);
+            }
+
+            function closeBpModal() {
+                bpModal.classList.add('hidden');
+                document.body.style.overflow = '';
+                selectedBpDate = null;
+            }
+
+            function saveBp() {
+                if (!selectedBpDate) return;
+                const key = getDateKey(selectedBpDate);
+                const mh = parseInt(bpMorningHigh.value);
+                const ml = parseInt(bpMorningLow.value);
+                const eh = parseInt(bpEveningHigh.value);
+                const el = parseInt(bpEveningLow.value);
+                if (!bpData[key]) bpData[key] = {};
+                if (!isNaN(mh) && !isNaN(ml)) bpData[key].morning = { high: mh, low: ml };
+                else delete bpData[key].morning;
+                if (!isNaN(eh) && !isNaN(el)) bpData[key].evening = { high: eh, low: el };
+                else delete bpData[key].evening;
+                if (!bpData[key].morning && !bpData[key].evening) delete bpData[key];
+                localStorage.setItem('bloodPressureData', JSON.stringify(bpData));
+                generateBPView();
+                closeBpModal();
+            }
+
+            function delBp() {
+                if (!selectedBpDate) return;
+                delete bpData[getDateKey(selectedBpDate)];
+                localStorage.setItem('bloodPressureData', JSON.stringify(bpData));
+                generateBPView();
+                closeBpModal();
+            }
+
+            // BP Settings
+            bpSettingsBtn.onclick = () => {
+                bpHighLimit.value = bpSettings.highLimit;
+                bpLowLimit.value = bpSettings.lowLimit;
+                bpSettingsPanel.classList.toggle('hidden');
+            };
+            bpSaveLimit.onclick = () => {
+                const hl = parseInt(bpHighLimit.value);
+                const ll = parseInt(bpLowLimit.value);
+                if (!isNaN(hl) && !isNaN(ll) && hl > 0 && ll > 0) {
+                    bpSettings.highLimit = hl;
+                    bpSettings.lowLimit = ll;
+                    localStorage.setItem('bpSettings', JSON.stringify(bpSettings));
+                    generateBPView();
+                    bpSettingsPanel.classList.add('hidden');
+                }
+            };
+
             saveNoteBtn.onclick = saveNote;
             deleteNoteBtn.onclick = delNote;
             closeModalBtn.onclick = closeModal;
             noteModal.onclick = e => { if(e.target === noteModal) closeModal(); };
-            document.onkeydown = e => { if(e.key === 'Escape') closeModal(); };
+            saveBpBtn.onclick = saveBp;
+            deleteBpBtn.onclick = delBp;
+            closeBpModalBtn.onclick = closeBpModal;
+            bpModal.onclick = e => { if (e.target === bpModal) closeBpModal(); };
+            document.onkeydown = e => {
+                if(e.key === 'Escape') {
+                    if (!noteModal.classList.contains('hidden')) closeModal();
+                    if (!bpModal.classList.contains('hidden')) closeBpModal();
+                }
+            };
+
+            // Tab switching
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.onclick = () => {
+                    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    document.querySelectorAll('.tab-panel').forEach(p => p.classList.add('hidden-panel'));
+                    document.getElementById('tab-panel-' + btn.dataset.tab).classList.remove('hidden-panel');
+                };
+            });
 
             generateAllWeeks();
+            generateBPView();
         });
     </script>
 </body>
