@@ -129,9 +129,11 @@
 </head>
 <body class="bg-gray-50 min-h-screen">
     <div class="container mx-auto px-2 sm:px-4 py-4">
-        <div class="sticky top-0 z-10 bg-gray-50 flex gap-1 mb-4 border-b border-gray-200" style="padding-top: 4px;">
+        <div class="sticky top-0 z-10 bg-gray-50 flex gap-1 mb-4 border-b border-gray-200 items-center" style="padding-top: 4px;">
             <button class="tab-btn active" data-tab="1">周历</button>
             <button class="tab-btn" data-tab="2">血压</button>
+            <button class="tab-btn" data-tab="3">成长</button>
+            <div class="flex-1"></div>
         </div>
 
         <div class="bg-white rounded-lg shadow-calendar p-3 sm:p-6">
@@ -175,6 +177,28 @@
                 </div>
             </div>
             <div id="bp-container" class="space-y-4"></div>
+        </div>
+        <div id="tab-panel-3" class="tab-panel hidden-panel">
+            <div class="flex items-center justify-between mb-1">
+                <h2 class="text-lg sm:text-xl font-semibold text-gray-800">成长记录</h2>
+                <button id="growth-add-btn" class="px-3 py-1.5 bg-primary text-white text-sm rounded hover:bg-accent transition-colors">
+                    <i class="fa fa-plus"></i> 添加
+                </button>
+            </div>
+            <p class="text-sm text-gray-500 mb-4">记录每次B超检查的胎儿发育数据（单位：mm）</p>
+            
+            <!-- 曲线图区域 -->
+            <div id="growth-chart-section" class="mb-6 hidden">
+                <div class="flex items-center justify-between mb-3">
+                    <h3 class="text-base font-semibold text-gray-700">发育曲线</h3>
+                    <div id="growth-chart-legend" class="flex flex-wrap gap-2 text-xs"></div>
+                </div>
+                <div class="relative bg-white border border-gray-200 rounded-lg p-2 overflow-x-auto">
+                    <canvas id="growth-chart" width="700" height="300"></canvas>
+                </div>
+            </div>
+
+            <div id="growth-container" class="space-y-4"></div>
         </div>
     </div>
 
@@ -240,6 +264,62 @@
             <div class="flex justify-end gap-2">
                 <button id="delete-bp" class="px-3 py-2 bg-red-500 text-white rounded hidden">删除</button>
                 <button id="save-bp" class="px-3 py-2 bg-primary text-white rounded">保存</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 成长记录弹窗 -->
+    <div id="growth-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+        <div class="bg-white rounded-lg shadow-lg w-full max-w-sm mx-3 p-4">
+            <div class="flex justify-between items-center mb-3">
+                <h3 id="growth-modal-title" class="text-lg font-semibold text-gray-800">成长记录</h3>
+                <button id="close-growth-modal" class="text-gray-500 hover:text-gray-700">
+                    <i class="fa fa-times"></i>
+                </button>
+            </div>
+            <div class="space-y-3 mb-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-600 mb-1">检查日期</label>
+                    <input id="growth-date" type="date" class="w-full border border-gray-300 rounded p-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-600 mb-1">孕周</label>
+                    <input id="growth-week" type="text" placeholder="如：24+2" class="w-full border border-gray-300 rounded p-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary">
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-600 mb-1">双顶径 BPD</label>
+                        <input id="growth-bpd" type="number" step="0.1" min="0" placeholder="mm" class="w-full border border-gray-300 rounded p-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-600 mb-1">头围 HC</label>
+                        <input id="growth-hc" type="number" step="0.1" min="0" placeholder="mm" class="w-full border border-gray-300 rounded p-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-600 mb-1">腹围 AC</label>
+                        <input id="growth-ac" type="number" step="0.1" min="0" placeholder="mm" class="w-full border border-gray-300 rounded p-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-600 mb-1">股骨长 FL</label>
+                        <input id="growth-fl" type="number" step="0.1" min="0" placeholder="mm" class="w-full border border-gray-300 rounded p-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-600 mb-1">羊水最大深度</label>
+                        <input id="growth-afd" type="number" step="0.1" min="0" placeholder="mm" class="w-full border border-gray-300 rounded p-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-600 mb-1">宫颈长</label>
+                        <input id="growth-cl" type="number" step="0.1" min="0" placeholder="mm" class="w-full border border-gray-300 rounded p-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-600 mb-1">胎盘厚</label>
+                        <input id="growth-pl" type="number" step="0.1" min="0" placeholder="mm" class="w-full border border-gray-300 rounded p-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary">
+                    </div>
+                </div>
+            </div>
+            <div class="flex justify-end gap-2">
+                <button id="delete-growth" class="px-3 py-2 bg-red-500 text-white rounded hidden">删除</button>
+                <button id="save-growth" class="px-3 py-2 bg-primary text-white rounded">保存</button>
             </div>
         </div>
     </div>
@@ -537,10 +617,271 @@
             deleteBpBtn.onclick = delBp;
             closeBpModalBtn.onclick = closeBpModal;
             bpModal.onclick = e => { if (e.target === bpModal) closeBpModal(); };
+
+            // ---------- Growth ----------
+            let growthData = JSON.parse(localStorage.getItem('growthData')) || [];
+            let selectedGrowthIndex = -1;
+            const growthContainer = document.getElementById('growth-container');
+            const growthModal = document.getElementById('growth-modal');
+            const growthModalTitle = document.getElementById('growth-modal-title');
+            const growthDate = document.getElementById('growth-date');
+            const growthWeek = document.getElementById('growth-week');
+            const growthBpd = document.getElementById('growth-bpd');
+            const growthHc = document.getElementById('growth-hc');
+            const growthAc = document.getElementById('growth-ac');
+            const growthFl = document.getElementById('growth-fl');
+            const growthAfd = document.getElementById('growth-afd');
+            const growthCl = document.getElementById('growth-cl');
+            const growthPl = document.getElementById('growth-pl');
+            const saveGrowthBtn = document.getElementById('save-growth');
+            const deleteGrowthBtn = document.getElementById('delete-growth');
+            const closeGrowthModalBtn = document.getElementById('close-growth-modal');
+            const growthAddBtn = document.getElementById('growth-add-btn');
+            const growthChartSection = document.getElementById('growth-chart-section');
+            const growthChartCanvas = document.getElementById('growth-chart');
+            const growthChartLegend = document.getElementById('growth-chart-legend');
+
+            function generateGrowthView() {
+                growthContainer.innerHTML = '';
+                if (growthData.length === 0) {
+                    growthContainer.innerHTML = '<p class="text-gray-400 text-sm text-center py-8">暂无记录，点击上方"添加"按钮开始记录</p>';
+                    growthChartSection.classList.add('hidden');
+                    return;
+                }
+                const sorted = [...growthData].sort((a, b) => a.date.localeCompare(b.date));
+                drawGrowthChart(sorted);
+                sorted.forEach((item, i) => {
+                    const origIndex = growthData.indexOf(item);
+                    const prev = i > 0 ? sorted[i - 1] : null;
+                    const card = document.createElement('div');
+                    card.className = 'bg-white border border-gray-200 rounded-lg p-3 cursor-pointer hover:bg-gray-50 transition-colors';
+                    card.onclick = () => openGrowthModal(origIndex);
+                    const d = new Date(item.date + 'T00:00:00');
+                    const dateStr = `${d.getFullYear()}年${d.getMonth()+1}月${d.getDate()}日`;
+                    const fields = [
+                        { key: 'bpd', label: '双顶径' },
+                        { key: 'hc', label: '头围' },
+                        { key: 'ac', label: '腹围' },
+                        { key: 'fl', label: '股骨长' },
+                        { key: 'afd', label: '羊水' },
+                        { key: 'cl', label: '宫颈长' },
+                        { key: 'pl', label: '胎盘厚' }
+                    ];
+                    let fieldsHtml = fields.map(f => {
+                        const val = item[f.key];
+                        let diffHtml = '';
+                        if (prev && val && prev[f.key]) {
+                            const diff = (parseFloat(val) - parseFloat(prev[f.key])).toFixed(1);
+                            const num = parseFloat(diff);
+                            if (num > 0) diffHtml = `<span class="text-green-500 text-xs ml-1">+${diff}</span>`;
+                            else if (num < 0) diffHtml = `<span class="text-red-500 text-xs ml-1">${diff}</span>`;
+                            else diffHtml = `<span class="text-gray-400 text-xs ml-1">0</span>`;
+                        }
+                        return `<div><span class="text-gray-500">${f.label}:</span> <span class="font-medium">${val || '-'}</span>${diffHtml}</div>`;
+                    }).join('');
+                    card.innerHTML = `
+                        <div class="flex justify-between items-center mb-2">
+                            <span class="font-medium text-gray-800">${dateStr}</span>
+                            <span class="text-sm text-gray-500">${item.week || '-'}</span>
+                        </div>
+                        <div class="grid grid-cols-3 gap-2 text-sm">
+                            ${fieldsHtml}
+                        </div>
+                    `;
+                    growthContainer.appendChild(card);
+                });
+            }
+
+            const chartSeries = [
+                { key: 'bpd', label: '双顶径', color: '#3b82f6' },
+                { key: 'hc', label: '头围', color: '#10b981' },
+                { key: 'ac', label: '腹围', color: '#f59e0b' },
+                { key: 'fl', label: '股骨长', color: '#ef4444' },
+                { key: 'afd', label: '羊水', color: '#8b5cf6' },
+                { key: 'cl', label: '宫颈长', color: '#ec4899' },
+                { key: 'pl', label: '胎盘厚', color: '#06b6d4' }
+            ];
+
+            function drawGrowthChart(sorted) {
+                growthChartSection.classList.remove('hidden');
+                const ctx = growthChartCanvas.getContext('2d');
+                const dpr = window.devicePixelRatio || 1;
+                const displayW = growthChartCanvas.parentElement.clientWidth - 16;
+                const displayH = 300;
+                growthChartCanvas.style.width = displayW + 'px';
+                growthChartCanvas.style.height = displayH + 'px';
+                growthChartCanvas.width = displayW * dpr;
+                growthChartCanvas.height = displayH * dpr;
+                ctx.scale(dpr, dpr);
+
+                const padL = 50, padR = 20, padT = 20, padB = 40;
+                const cw = displayW - padL - padR;
+                const ch = displayH - padT - padB;
+
+                ctx.clearRect(0, 0, displayW, displayH);
+
+                const labels = sorted.map(item => {
+                    const d = new Date(item.date + 'T00:00:00');
+                    return item.week || `${d.getMonth()+1}/${d.getDate()}`;
+                });
+
+                let allVals = [];
+                sorted.forEach(item => {
+                    chartSeries.forEach(s => { if (item[s.key]) allVals.push(parseFloat(item[s.key])); });
+                });
+                if (allVals.length === 0) {
+                    growthChartSection.classList.add('hidden');
+                    return;
+                }
+                let minV = Math.floor(Math.min(...allVals) / 10) * 10;
+                let maxV = Math.ceil(Math.max(...allVals) / 10) * 10;
+                if (maxV === minV) maxV = minV + 20;
+                const rangeV = maxV - minV;
+
+                ctx.strokeStyle = '#e5e7eb';
+                ctx.lineWidth = 1;
+                ctx.fillStyle = '#6b7280';
+                ctx.font = '11px system-ui, sans-serif';
+                ctx.textAlign = 'right';
+                const gridLines = 5;
+                for (let i = 0; i <= gridLines; i++) {
+                    const y = padT + ch - (i / gridLines) * ch;
+                    const val = minV + (i / gridLines) * rangeV;
+                    ctx.beginPath();
+                    ctx.moveTo(padL, y);
+                    ctx.lineTo(padL + cw, y);
+                    ctx.stroke();
+                    ctx.fillText(Math.round(val), padL - 8, y + 4);
+                }
+
+                if (sorted.length > 1) {
+                    ctx.textAlign = 'center';
+                    sorted.forEach((item, idx) => {
+                        const x = padL + (idx / (sorted.length - 1)) * cw;
+                        ctx.fillText(labels[idx], x, displayH - padB + 18);
+                    });
+                } else if (sorted.length === 1) {
+                    ctx.textAlign = 'center';
+                    ctx.fillText(labels[0], padL + cw / 2, displayH - padB + 18);
+                }
+
+                chartSeries.forEach(s => {
+                    const points = [];
+                    sorted.forEach((item, idx) => {
+                        if (item[s.key]) {
+                            const x = sorted.length > 1 ? padL + (idx / (sorted.length - 1)) * cw : padL + cw / 2;
+                            const y = padT + ch - ((parseFloat(item[s.key]) - minV) / rangeV) * ch;
+                            points.push({ x, y, val: item[s.key] });
+                        }
+                    });
+                    if (points.length === 0) return;
+
+                    ctx.strokeStyle = s.color;
+                    ctx.lineWidth = 2;
+                    ctx.lineJoin = 'round';
+                    ctx.beginPath();
+                    points.forEach((p, i) => { i === 0 ? ctx.moveTo(p.x, p.y) : ctx.lineTo(p.x, p.y); });
+                    ctx.stroke();
+
+                    points.forEach(p => {
+                        ctx.fillStyle = s.color;
+                        ctx.beginPath();
+                        ctx.arc(p.x, p.y, 4, 0, Math.PI * 2);
+                        ctx.fill();
+                        ctx.fillStyle = '#fff';
+                        ctx.beginPath();
+                        ctx.arc(p.x, p.y, 2, 0, Math.PI * 2);
+                        ctx.fill();
+                    });
+                });
+
+                growthChartLegend.innerHTML = chartSeries.map(s =>
+                    `<span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full inline-block" style="background:${s.color}"></span>${s.label}</span>`
+                ).join('');
+            }
+
+            function openGrowthModal(index) {
+                selectedGrowthIndex = index;
+                if (index >= 0) {
+                    const item = growthData[index];
+                    growthModalTitle.innerText = '编辑成长记录';
+                    growthDate.value = item.date;
+                    growthWeek.value = item.week || '';
+                    growthBpd.value = item.bpd || '';
+                    growthHc.value = item.hc || '';
+                    growthAc.value = item.ac || '';
+                    growthFl.value = item.fl || '';
+                    growthAfd.value = item.afd || '';
+                    growthCl.value = item.cl || '';
+                    growthPl.value = item.pl || '';
+                    deleteGrowthBtn.classList.remove('hidden');
+                } else {
+                    growthModalTitle.innerText = '添加成长记录';
+                    growthDate.value = '';
+                    growthWeek.value = '';
+                    growthBpd.value = '';
+                    growthHc.value = '';
+                    growthAc.value = '';
+                    growthFl.value = '';
+                    growthAfd.value = '';
+                    growthCl.value = '';
+                    growthPl.value = '';
+                    deleteGrowthBtn.classList.add('hidden');
+                }
+                growthModal.classList.remove('hidden');
+                document.body.style.overflow = 'hidden';
+            }
+
+            function closeGrowthModal() {
+                growthModal.classList.add('hidden');
+                document.body.style.overflow = '';
+                selectedGrowthIndex = -1;
+            }
+
+            function saveGrowth() {
+                const date = growthDate.value;
+                if (!date) { alert('请选择检查日期'); return; }
+                const record = {
+                    date,
+                    week: growthWeek.value.trim(),
+                    bpd: growthBpd.value,
+                    hc: growthHc.value,
+                    ac: growthAc.value,
+                    fl: growthFl.value,
+                    afd: growthAfd.value,
+                    cl: growthCl.value,
+                    pl: growthPl.value
+                };
+                if (selectedGrowthIndex >= 0) {
+                    growthData[selectedGrowthIndex] = record;
+                } else {
+                    growthData.push(record);
+                }
+                localStorage.setItem('growthData', JSON.stringify(growthData));
+                generateGrowthView();
+                closeGrowthModal();
+            }
+
+            function deleteGrowth() {
+                if (selectedGrowthIndex >= 0) {
+                    growthData.splice(selectedGrowthIndex, 1);
+                    localStorage.setItem('growthData', JSON.stringify(growthData));
+                    generateGrowthView();
+                    closeGrowthModal();
+                }
+            }
+
+            growthAddBtn.onclick = () => openGrowthModal(-1);
+            saveGrowthBtn.onclick = saveGrowth;
+            deleteGrowthBtn.onclick = deleteGrowth;
+            closeGrowthModalBtn.onclick = closeGrowthModal;
+            growthModal.onclick = e => { if (e.target === growthModal) closeGrowthModal(); };
+
             document.onkeydown = e => {
                 if(e.key === 'Escape') {
                     if (!noteModal.classList.contains('hidden')) closeModal();
                     if (!bpModal.classList.contains('hidden')) closeBpModal();
+                    if (!growthModal.classList.contains('hidden')) closeGrowthModal();
                 }
             };
 
@@ -556,6 +897,7 @@
 
             generateAllWeeks();
             generateBPView();
+            generateGrowthView();
         });
     </script>
 </body>
