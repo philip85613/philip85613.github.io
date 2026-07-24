@@ -137,6 +137,8 @@
             <div class="flex-1"></div>
         </div>
 
+        <div id="reminder-banner" class="hidden mb-4 space-y-2"></div>
+
         <div class="bg-white rounded-lg shadow-calendar p-3 sm:p-6">
             <div id="tab-panel-1" class="tab-panel">
                 <h1 class="text-2xl sm:text-3xl font-bold text-gray-800 mb-1">周历视图</h1>
@@ -845,6 +847,62 @@
             generateAllWeeks();
             generateBPView();
             generateGrowthView();
+            checkReminders();
+
+            function checkReminders() {
+                const banner = document.getElementById('reminder-banner');
+                banner.innerHTML = '';
+                const reminders = [];
+                const todayKey = getDateKey(today);
+
+                // BP reminder
+                const currentWeekNum = Math.floor((today - week10Monday) / (7 * 86400000)) + 10;
+                if (currentWeekNum >= BP_START_WEEK) {
+                    const todayBp = bpData[todayKey];
+                    if (!todayBp || !todayBp.morning) {
+                        reminders.push({ icon: 'fa-heartbeat', text: '今天还没有记录早晨血压', color: 'bg-orange-50 border-orange-200 text-orange-700', iconColor: 'text-orange-500' });
+                    }
+                    if (!todayBp || !todayBp.evening) {
+                        const hour = new Date().getHours();
+                        if (hour >= 18) {
+                            reminders.push({ icon: 'fa-heartbeat', text: '今天还没有记录晚间血压', color: 'bg-orange-50 border-orange-200 text-orange-700', iconColor: 'text-orange-500' });
+                        }
+                    }
+                }
+
+                // Note reminder - 1 day before
+                const tomorrow = new Date(today);
+                tomorrow.setDate(today.getDate() + 1);
+                const tomorrowKey = getDateKey(tomorrow);
+                if (notes[tomorrowKey]) {
+                    const preview = notes[tomorrowKey].length > 20 ? notes[tomorrowKey].slice(0, 20) + '...' : notes[tomorrowKey];
+                    reminders.push({ icon: 'fa-sticky-note', text: `明天有备注：${preview}`, color: 'bg-yellow-50 border-yellow-200 text-yellow-700', iconColor: 'text-yellow-500' });
+                }
+
+                // Growth check reminder
+                if (growthData.length > 0) {
+                    const sorted = [...growthData].sort((a, b) => b.date.localeCompare(a.date));
+                    const lastCheck = sorted[0];
+                    const lastDate = new Date(lastCheck.date + 'T00:00:00');
+                    const daysSince = Math.floor((today - lastDate) / 86400000);
+                    if (daysSince >= 28) {
+                        reminders.push({ icon: 'fa-calendar-check-o', text: `距离上次B超检查已过 ${daysSince} 天，建议安排下一次检查`, color: 'bg-blue-50 border-blue-200 text-blue-700', iconColor: 'text-blue-500' });
+                    }
+                }
+
+                if (reminders.length === 0) {
+                    banner.classList.add('hidden');
+                    return;
+                }
+
+                reminders.forEach(r => {
+                    const div = document.createElement('div');
+                    div.className = `flex items-center gap-3 p-3 rounded-lg border ${r.color}`;
+                    div.innerHTML = `<i class="fa ${r.icon} ${r.iconColor} text-lg"></i><span class="text-sm font-medium">${r.text}</span>`;
+                    banner.appendChild(div);
+                });
+                banner.classList.remove('hidden');
+            }
         });
     </script>
 </body>
