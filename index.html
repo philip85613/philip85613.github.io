@@ -134,6 +134,7 @@
             <button class="tab-btn active" data-tab="1">周历</button>
             <button class="tab-btn" data-tab="2">血压</button>
             <button class="tab-btn" data-tab="3">成长</button>
+            <button class="tab-btn" data-tab="5">待办清单</button>
             <div class="flex-1"></div>
         </div>
 
@@ -144,6 +145,17 @@
                 <h1 class="text-2xl sm:text-3xl font-bold text-gray-800 mb-1">周历视图</h1>
                 <p class="text-gray-600 mb-3 sm:mb-4">5月12日为第10周第2天</p>
                 <h2 class="text-lg sm:text-xl font-semibold text-gray-800 mb-3 sm:mb-4">第10周 ～ 第43周</h2>
+
+                <div id="pregnancy-stats" class="bg-neutral border border-gray-200 rounded-lg p-3 sm:p-4 mb-3 sm:mb-4">
+                    <div class="flex flex-wrap items-center gap-x-5 gap-y-1">
+                        <span id="preg-week" class="text-base sm:text-lg font-bold text-gray-800"></span>
+                        <span id="preg-edd" class="text-sm text-gray-600"></span>
+                        <span id="preg-countdown" class="text-sm font-medium text-primary"></span>
+                    </div>
+                    <div class="mt-2 bg-white rounded-full h-2.5 overflow-hidden">
+                        <div id="preg-progress" class="h-full bg-gradient-to-r from-primary to-secondary rounded-full transition-all duration-500" style="width:0%"></div>
+                    </div>
+                </div>
 
             <div class="calendar-grid mb-1">
                 <div class="week-header">周一</div>
@@ -161,9 +173,14 @@
         <div id="tab-panel-2" class="tab-panel hidden-panel">
             <div class="flex items-center justify-between mb-1">
                 <h2 class="text-lg sm:text-xl font-semibold text-gray-800">血压记录</h2>
-                <button id="bp-settings-btn" class="text-gray-400 hover:text-gray-600 transition-colors" title="设置血压上限">
-                    <i class="fa fa-cog"></i>
-                </button>
+                <div class="flex items-center gap-2">
+                    <button id="bp-chart-toggle-btn" class="text-gray-400 hover:text-gray-600 transition-colors" title="血压趋势">
+                        <i class="fa fa-area-chart"></i>
+                    </button>
+                    <button id="bp-settings-btn" class="text-gray-400 hover:text-gray-600 transition-colors" title="设置血压上限">
+                        <i class="fa fa-cog"></i>
+                    </button>
+                </div>
             </div>
             <p class="text-sm text-gray-500 mb-4">记录每日早晚血压值（高压/低压）</p>
             <div id="bp-settings-panel" class="hidden mb-4 p-3 bg-gray-50 rounded-lg border border-gray-200">
@@ -177,6 +194,12 @@
                         <input id="bp-low-limit" type="number" min="40" max="180" class="w-20 border border-gray-300 rounded p-1 text-sm text-center focus:outline-none focus:ring-2 focus:ring-primary">
                     </label>
                     <button id="bp-save-limit" class="px-3 py-1.5 bg-primary text-white text-sm rounded hover:bg-accent transition-colors">保存</button>
+                </div>
+            </div>
+            <div id="bp-chart-section" class="mb-4 hidden">
+                <h3 class="text-base font-semibold text-gray-700 mb-2">血压趋势</h3>
+                <div class="relative bg-white border border-gray-200 rounded-lg p-2">
+                    <canvas id="bp-chart"></canvas>
                 </div>
             </div>
             <div id="bp-container" class="space-y-4"></div>
@@ -199,6 +222,22 @@
             </div>
 
             <div id="growth-container" class="space-y-4"></div>
+        </div>
+        <div id="tab-panel-5" class="tab-panel hidden-panel">
+            <div class="flex items-center justify-between mb-1">
+                <h2 class="text-lg sm:text-xl font-semibold text-gray-800">待办清单</h2>
+                <div class="flex items-center gap-2">
+                    <button id="checklist-add-btn" class="px-3 py-1.5 bg-primary text-white text-sm rounded hover:bg-accent transition-colors">
+                        <i class="fa fa-plus"></i> 添加
+                    </button>
+                    <button id="checklist-manage-btn" class="text-gray-400 hover:text-gray-600 transition-colors" title="管理分类和物品">
+                        <i class="fa fa-cog"></i>
+                    </button>
+                </div>
+            </div>
+            <p class="text-sm text-gray-500 mb-4">宝宝出生后必备物品，勾选已准备好的</p>
+            <div id="checklist-progress" class="mb-4"></div>
+            <div id="checklist-container" class="space-y-4"></div>
         </div>
     </div>
 
@@ -320,6 +359,32 @@
             <div class="flex justify-end gap-2">
                 <button id="delete-growth" class="px-3 py-2 bg-red-500 text-white rounded hidden">删除</button>
                 <button id="save-growth" class="px-3 py-2 bg-primary text-white rounded">保存</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 添加物品弹窗 -->
+    <div id="checklist-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+        <div class="bg-white rounded-lg shadow-lg w-full max-w-sm mx-3 p-4">
+            <div class="flex justify-between items-center mb-3">
+                <h3 class="text-lg font-semibold text-gray-800">添加物品</h3>
+                <button id="close-checklist-modal" class="text-gray-500 hover:text-gray-700">
+                    <i class="fa fa-times"></i>
+                </button>
+            </div>
+            <div class="space-y-3 mb-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-600 mb-1">所属分类</label>
+                    <select id="checklist-category" class="w-full border border-gray-300 rounded p-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary">
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-600 mb-1">物品名称</label>
+                    <input id="checklist-item-name" type="text" maxlength="30" placeholder="输入物品名称" class="w-full border border-gray-300 rounded p-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary">
+                </div>
+            </div>
+            <div class="flex justify-end gap-2">
+                <button id="save-checklist-item" class="px-3 py-2 bg-primary text-white rounded">保存</button>
             </div>
         </div>
     </div>
@@ -477,6 +542,9 @@
             const bpHighLimit = document.getElementById('bp-high-limit');
             const bpLowLimit = document.getElementById('bp-low-limit');
             const bpSaveLimit = document.getElementById('bp-save-limit');
+            const bpChartSection = document.getElementById('bp-chart-section');
+            const bpChartCanvas = document.getElementById('bp-chart');
+            let bpChart = null;
 
             function getDateKey(date) {
                 return date.getFullYear() + "-"
@@ -541,6 +609,67 @@
                     wrap.appendChild(grid);
                     bpContainer.appendChild(wrap);
                 }
+                drawBpChart();
+            }
+
+            function drawBpChart() {
+                const dates = Object.keys(bpData).sort();
+                if (bpChart) { bpChart.destroy(); bpChart = null; }
+                if (dates.length === 0) return;
+
+                const labels = dates.map(d => {
+                    const parts = d.split('-');
+                    return `${parseInt(parts[1], 10)}/${parseInt(parts[2], 10)}`;
+                });
+
+                const series = [
+                    { key: 'morning', part: 'high', label: '早高压', color: '#ef4444' },
+                    { key: 'morning', part: 'low', label: '早低压', color: '#f97316' },
+                    { key: 'evening', part: 'high', label: '晚高压', color: '#3b82f6' },
+                    { key: 'evening', part: 'low', label: '晚低压', color: '#10b981' }
+                ];
+
+                const datasets = series.map(s => ({
+                    label: s.label,
+                    data: dates.map(d => {
+                        const reading = bpData[d] && bpData[d][s.key];
+                        return reading && reading[s.part] ? reading[s.part] : null;
+                    }),
+                    borderColor: s.color,
+                    backgroundColor: s.color + '20',
+                    pointRadius: 3,
+                    pointHoverRadius: 5,
+                    borderWidth: 2,
+                    tension: 0.3,
+                    spanGaps: false
+                }));
+
+                datasets.push(
+                    { label: `高压上限(${bpSettings.highLimit})`, data: dates.map(() => bpSettings.highLimit), borderColor: '#f87171', borderDash: [6, 4], borderWidth: 1, pointRadius: 0, fill: false, tension: 0 },
+                    { label: `低压上限(${bpSettings.lowLimit})`, data: dates.map(() => bpSettings.lowLimit), borderColor: '#fb923c', borderDash: [6, 4], borderWidth: 1, pointRadius: 0, fill: false, tension: 0 }
+                );
+
+                bpChart = new Chart(bpChartCanvas, {
+                    type: 'line',
+                    data: { labels, datasets },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: true,
+                        interaction: { mode: 'index', intersect: false },
+                        plugins: {
+                            legend: { position: 'bottom', labels: { boxWidth: 12, padding: 12 } },
+                            tooltip: {
+                                callbacks: {
+                                    label: ctx => ctx.parsed.y !== null ? `${ctx.dataset.label}: ${ctx.parsed.y}` : null
+                                }
+                            }
+                        },
+                        scales: {
+                            y: { beginAtZero: false, grid: { color: '#f3f4f6' } },
+                            x: { grid: { display: false } }
+                        }
+                    }
+                });
             }
 
             function openBpModal(date, week, dayNo, focus) {
@@ -617,6 +746,10 @@
             deleteBpBtn.onclick = delBp;
             closeBpModalBtn.onclick = closeBpModal;
             bpModal.onclick = e => { if (e.target === bpModal) closeBpModal(); };
+            document.getElementById('bp-chart-toggle-btn').onclick = () => {
+                bpChartSection.classList.toggle('hidden');
+                if (!bpChartSection.classList.contains('hidden')) drawBpChart();
+            };
 
             // ---------- Growth ----------
             let growthData = JSON.parse(localStorage.getItem('growthData')) || [];
@@ -826,11 +959,213 @@
             closeGrowthModalBtn.onclick = closeGrowthModal;
             growthModal.onclick = e => { if (e.target === growthModal) closeGrowthModal(); };
 
+            // ---------- Baby Checklist ----------
+            const DEFAULT_CATEGORIES = [
+            ];
+
+            const DEFAULT_ITEMS = [
+            ];
+
+            let checklistData = JSON.parse(localStorage.getItem('babyChecklist')) || null;
+            if (!checklistData || !checklistData.categories) {
+                const oldDone = (checklistData && checklistData.done) || {};
+                const oldCustom = (checklistData && checklistData.customItems) || [];
+                checklistData = {
+                    categories: DEFAULT_CATEGORIES.map(c => ({...c})),
+                    items: [
+                        ...DEFAULT_ITEMS.map(i => ({...i})),
+                        ...oldCustom.map(c => ({ id: c.id, cat: c.category, name: c.name }))
+                    ],
+                    done: oldDone
+                };
+                localStorage.setItem('babyChecklist', JSON.stringify(checklistData));
+            }
+
+            const checklistContainer = document.getElementById('checklist-container');
+            const checklistProgress = document.getElementById('checklist-progress');
+            const checklistModal = document.getElementById('checklist-modal');
+            const checklistCategory = document.getElementById('checklist-category');
+            const checklistItemName = document.getElementById('checklist-item-name');
+            const saveChecklistItemBtn = document.getElementById('save-checklist-item');
+            const closeChecklistModalBtn = document.getElementById('close-checklist-modal');
+            const checklistAddBtn = document.getElementById('checklist-add-btn');
+
+            function saveChecklistData() {
+                localStorage.setItem('babyChecklist', JSON.stringify(checklistData));
+            }
+
+            function renderCategorySelect() {
+                checklistCategory.innerHTML = '';
+                checklistData.categories.forEach(c => {
+                    const opt = document.createElement('option');
+                    opt.value = c.key;
+                    opt.textContent = c.name;
+                    checklistCategory.appendChild(opt);
+                });
+            }
+
+            renderCategorySelect();
+
+            function generateChecklistView() {
+                checklistContainer.innerHTML = '';
+                let totalDone = 0;
+                let totalItems = 0;
+
+                checklistData.categories.forEach(cat => {
+                    const catItems = checklistData.items.filter(i => i.cat === cat.key);
+                    if (catItems.length === 0) return;
+
+                    const catDone = catItems.filter(item => checklistData.done[item.id]).length;
+                    totalDone += catDone;
+                    totalItems += catItems.length;
+
+                    const section = document.createElement('div');
+                    section.className = 'bg-white border border-gray-200 rounded-lg p-3';
+
+                    const header = document.createElement('div');
+                    header.className = 'flex items-center justify-between mb-2';
+                    header.innerHTML = `
+                        <span class="font-medium text-gray-800">${cat.name}</span>
+                        <div class="flex items-center gap-2">
+                            <span class="text-xs text-gray-400">${catDone}/${catItems.length}</span>
+                            <button class="cat-edit text-gray-300 hover:text-blue-500 transition-colors text-xs" title="编辑分类"><i class="fa fa-pencil"></i></button>
+                            <button class="cat-del text-gray-300 hover:text-red-500 transition-colors text-xs" title="删除分类"><i class="fa fa-trash-o"></i></button>
+                        </div>
+                    `;
+                    header.querySelector('.cat-edit').onclick = () => editCategory(cat.key);
+                    header.querySelector('.cat-del').onclick = () => deleteCategory(cat.key);
+                    section.appendChild(header);
+
+                    catItems.forEach(item => {
+                        const row = document.createElement('div');
+                        row.className = 'flex items-center gap-2 py-1.5 border-t border-gray-100 first:border-t-0';
+                        const isChecked = !!checklistData.done[item.id];
+
+                        row.innerHTML = `
+                            <input type="checkbox" ${isChecked ? 'checked' : ''} class="checklist-cb w-4 h-4 text-primary rounded border-gray-300 focus:ring-primary cursor-pointer">
+                            <span class="text-sm flex-1 ${isChecked ? 'line-through text-gray-400' : 'text-gray-700'}">${item.name}</span>
+                            <button class="item-edit text-gray-300 hover:text-blue-500 transition-colors text-xs" title="编辑"><i class="fa fa-pencil"></i></button>
+                            <button class="item-del text-gray-300 hover:text-red-500 transition-colors text-xs" title="删除"><i class="fa fa-times"></i></button>
+                        `;
+
+                        row.querySelector('.checklist-cb').onchange = (e) => {
+                            if (e.target.checked) checklistData.done[item.id] = new Date().toISOString();
+                            else delete checklistData.done[item.id];
+                            saveChecklistData();
+                            generateChecklistView();
+                        };
+                        row.querySelector('.item-edit').onclick = () => editItem(item.id);
+                        row.querySelector('.item-del').onclick = () => deleteItem(item.id);
+
+                        section.appendChild(row);
+                    });
+
+                    const addItemRow = document.createElement('div');
+                    addItemRow.className = 'border-t border-gray-100 pt-2 mt-1';
+                    addItemRow.innerHTML = `<button class="add-in-cat text-xs text-gray-400 hover:text-primary transition-colors"><i class="fa fa-plus"></i> 添加物品</button>`;
+                    addItemRow.querySelector('.add-in-cat').onclick = () => {
+                        checklistCategory.value = cat.key;
+                        openChecklistModal();
+                    };
+                    section.appendChild(addItemRow);
+
+                    checklistContainer.appendChild(section);
+                });
+
+                if (totalItems === 0) {
+                    checklistContainer.innerHTML = '<p class="text-gray-400 text-sm text-center py-8">暂无物品，点击上方"添加"开始</p>';
+                }
+
+                checklistProgress.innerHTML = totalItems > 0
+                    ? `<div class="flex items-center gap-2 text-sm"><span class="font-medium text-gray-700">已完成 ${totalDone}/${totalItems}</span><div class="flex-1 bg-gray-200 rounded-full h-2"><div class="h-full bg-primary rounded-full transition-all duration-300" style="width:${(totalDone/totalItems*100).toFixed(0)}%"></div></div></div>`
+                    : '';
+            }
+
+            function openChecklistModal() {
+                checklistItemName.value = '';
+                checklistModal.classList.remove('hidden');
+                document.body.style.overflow = 'hidden';
+            }
+
+            function closeChecklistModal() {
+                checklistModal.classList.add('hidden');
+                document.body.style.overflow = '';
+            }
+
+            function saveChecklistItem() {
+                const name = checklistItemName.value.trim();
+                if (!name) return;
+                const cat = checklistCategory.value;
+                checklistData.items.push({ id: 'item-' + Date.now(), cat, name });
+                saveChecklistData();
+                generateChecklistView();
+                closeChecklistModal();
+            }
+
+            function addCategory() {
+                const name = prompt('输入新分类名称：');
+                if (!name || !name.trim()) return;
+                checklistData.categories.push({ key: 'cat-' + Date.now(), name: name.trim() });
+                saveChecklistData();
+                renderCategorySelect();
+                generateChecklistView();
+            }
+
+            function editCategory(key) {
+                const cat = checklistData.categories.find(c => c.key === key);
+                if (!cat) return;
+                const name = prompt('修改分类名称：', cat.name);
+                if (!name || !name.trim()) return;
+                cat.name = name.trim();
+                saveChecklistData();
+                renderCategorySelect();
+                generateChecklistView();
+            }
+
+            function deleteCategory(key) {
+                const cat = checklistData.categories.find(c => c.key === key);
+                if (!cat) return;
+                const count = checklistData.items.filter(i => i.cat === key).length;
+                const msg = count > 0 ? `确定删除分类"${cat.name}"？\n该分类下 ${count} 个物品也将被删除。` : `确定删除分类"${cat.name}"？`;
+                if (!confirm(msg)) return;
+                checklistData.items.filter(i => i.cat === key).forEach(i => { delete checklistData.done[i.id]; });
+                checklistData.items = checklistData.items.filter(i => i.cat !== key);
+                checklistData.categories = checklistData.categories.filter(c => c.key !== key);
+                saveChecklistData();
+                renderCategorySelect();
+                generateChecklistView();
+            }
+
+            function editItem(id) {
+                const item = checklistData.items.find(i => i.id === id);
+                if (!item) return;
+                const name = prompt('修改物品名称：', item.name);
+                if (!name || !name.trim()) return;
+                item.name = name.trim();
+                saveChecklistData();
+                generateChecklistView();
+            }
+
+            function deleteItem(id) {
+                if (!confirm('确定删除该物品？')) return;
+                checklistData.items = checklistData.items.filter(i => i.id !== id);
+                delete checklistData.done[id];
+                saveChecklistData();
+                generateChecklistView();
+            }
+
+            checklistAddBtn.onclick = openChecklistModal;
+            saveChecklistItemBtn.onclick = saveChecklistItem;
+            closeChecklistModalBtn.onclick = closeChecklistModal;
+            checklistModal.onclick = e => { if (e.target === checklistModal) closeChecklistModal(); };
+            document.getElementById('checklist-manage-btn').onclick = addCategory;
+
             document.onkeydown = e => {
                 if(e.key === 'Escape') {
                     if (!noteModal.classList.contains('hidden')) closeModal();
                     if (!bpModal.classList.contains('hidden')) closeBpModal();
                     if (!growthModal.classList.contains('hidden')) closeGrowthModal();
+                    if (!checklistModal.classList.contains('hidden')) closeChecklistModal();
                 }
             };
 
@@ -844,10 +1179,36 @@
                 };
             });
 
+            function getGestationalInfo() {
+                const lmp = new Date(week10Monday);
+                lmp.setDate(week10Monday.getDate() - 63);
+                const edd = new Date(lmp);
+                edd.setDate(lmp.getDate() + 280);
+                const gestationalDays = Math.max(0, Math.floor((today - lmp) / 86400000));
+                return {
+                    week: Math.floor(gestationalDays / 7),
+                    day: gestationalDays % 7,
+                    edd,
+                    daysLeft: Math.floor((edd - today) / 86400000),
+                    progress: Math.max(0, Math.min(1, gestationalDays / 280))
+                };
+            }
+
+            function renderPregnancyStats() {
+                const info = getGestationalInfo();
+                document.getElementById('preg-week').innerText = `已孕 ${info.week}周${info.day}天`;
+                const eddStr = `${info.edd.getFullYear()}年${info.edd.getMonth()+1}月${info.edd.getDate()}日`;
+                document.getElementById('preg-edd').innerText = `预产期 ${eddStr}`;
+                document.getElementById('preg-countdown').innerText = info.daysLeft >= 0 ? `距预产期 ${info.daysLeft} 天` : `已超过预产期 ${-info.daysLeft} 天`;
+                document.getElementById('preg-progress').style.width = (info.progress * 100).toFixed(1) + '%';
+            }
+
             generateAllWeeks();
             generateBPView();
             generateGrowthView();
             checkReminders();
+            renderPregnancyStats();
+            generateChecklistView();
 
             function checkReminders() {
                 const banner = document.getElementById('reminder-banner');
